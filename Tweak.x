@@ -36,18 +36,9 @@ static NSString *remainingDaysWithPrefix() {
 }
 
 @interface _TtC9Panda2Vpn8ProfileV : NSObject
-@property (nonatomic, weak) UILabel *endDateTL;
-@property (nonatomic, weak) UILabel *ddayTL;
-@property (nonatomic, weak) UILabel *d_dayL;
-@property (nonatomic, weak) UILabel *planTL;
-@property (nonatomic, weak) UILabel *planL;
-@property (nonatomic, weak) UILabel *ddayL;
 @end
 
 @interface _TtC9Panda2Vpn7MyInfoV : NSObject
-@property (nonatomic, weak) UILabel *endDateTL;
-@property (nonatomic, weak) UILabel *endDateL;
-@property (nonatomic, weak) UILabel *useDeviceL;
 @end
 
 @interface _TtC9Panda2Vpn12UserInfoData : NSObject
@@ -56,103 +47,60 @@ static NSString *remainingDaysWithPrefix() {
 @property (nonatomic, strong) id payInfoList;
 @end
 
-static void (*orig_ProfileV_setEndDateTL)(_TtC9Panda2Vpn8ProfileV *, SEL, UILabel *);
-static void (*orig_ProfileV_setDdayTL)(_TtC9Panda2Vpn8ProfileV *, SEL, UILabel *);
-static void (*orig_ProfileV_setD_dayL)(_TtC9Panda2Vpn8ProfileV *, SEL, UILabel *);
-static void (*orig_ProfileV_setPlanTL)(_TtC9Panda2Vpn8ProfileV *, SEL, UILabel *);
-static void (*orig_ProfileV_setPlanL)(_TtC9Panda2Vpn8ProfileV *, SEL, UILabel *);
-static void (*orig_ProfileV_setDdayL)(_TtC9Panda2Vpn8ProfileV *, SEL, UILabel *);
 static void (*orig_ProfileV_viewSetting)(_TtC9Panda2Vpn8ProfileV *, SEL);
-
-static void (*orig_MyInfoV_setEndDateTL)(_TtC9Panda2Vpn7MyInfoV *, SEL, UILabel *);
-static void (*orig_MyInfoV_setEndDateL)(_TtC9Panda2Vpn7MyInfoV *, SEL, UILabel *);
-static void (*orig_MyInfoV_setUseDeviceL)(_TtC9Panda2Vpn7MyInfoV *, SEL, UILabel *);
+static void (*orig_MyInfoV_viewSetting)(_TtC9Panda2Vpn7MyInfoV *, SEL);
 
 static id (*orig_JSONSerialization_JSONObjectWithData_options_error)(NSJSONSerialization *, SEL, NSData *, NSJSONReadingOptions, NSError **);
 
-static void ProfileV_setEndDateTL_hook(_TtC9Panda2Vpn8ProfileV *self, SEL _cmd, UILabel *label) {
-    orig_ProfileV_setEndDateTL(self, _cmd, label);
-    if (label) {
-        label.text = kExpireDateStr;
-    }
-}
-
-static void ProfileV_setDdayTL_hook(_TtC9Panda2Vpn8ProfileV *self, SEL _cmd, UILabel *label) {
-    orig_ProfileV_setDdayTL(self, _cmd, label);
-    if (label) {
-        label.text = remainingDaysWithPrefix();
-    }
-}
-
-static void ProfileV_setD_dayL_hook(_TtC9Panda2Vpn8ProfileV *self, SEL _cmd, UILabel *label) {
-    orig_ProfileV_setD_dayL(self, _cmd, label);
-    if (label) {
-        label.text = remainingDaysWithPrefix();
-    }
-}
-
-static void ProfileV_setPlanTL_hook(_TtC9Panda2Vpn8ProfileV *self, SEL _cmd, UILabel *label) {
-    orig_ProfileV_setPlanTL(self, _cmd, label);
-    if (label) {
-        label.text = @"Premium";
-    }
-}
-
-static void ProfileV_setPlanL_hook(_TtC9Panda2Vpn8ProfileV *self, SEL _cmd, UILabel *label) {
-    orig_ProfileV_setPlanL(self, _cmd, label);
-    if (label) {
-        label.text = @"Premium";
-    }
-}
-
-static void ProfileV_setDdayL_hook(_TtC9Panda2Vpn8ProfileV *self, SEL _cmd, UILabel *label) {
-    orig_ProfileV_setDdayL(self, _cmd, label);
-    if (label) {
-        label.text = remainingDaysWithPrefix();
+static void modifyLabelOnView(UIView *view) {
+    for (UIView *subview in view.subviews) {
+        if ([subview isKindOfClass:[UILabel class]]) {
+            UILabel *label = (UILabel *)subview;
+            NSString *text = label.text;
+            
+            if (text && [text isKindOfClass:[NSString class]]) {
+                NSDateFormatter *formatter1 = [[NSDateFormatter alloc] init];
+                [formatter1 setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+                NSDate *date1 = [formatter1 dateFromString:text];
+                
+                if (!date1) {
+                    NSDateFormatter *formatter2 = [[NSDateFormatter alloc] init];
+                    [formatter2 setDateFormat:@"yyyy.MM.dd"];
+                    date1 = [formatter2 dateFromString:text];
+                }
+                
+                if (date1) {
+                    label.text = kExpireDateStr;
+                } else if ([text hasPrefix:@"D-"] || [text hasPrefix:@"d-"]) {
+                    label.text = remainingDaysWithPrefix();
+                } else if ([text rangeOfString:@"day" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                           [text rangeOfString:@"剩余"].location != NSNotFound) {
+                    label.text = [NSString stringWithFormat:@"%@ day", remainingDaysString()];
+                }
+            }
+        }
+        
+        modifyLabelOnView(subview);
     }
 }
 
 static void ProfileV_viewSetting_hook(_TtC9Panda2Vpn8ProfileV *self, SEL _cmd) {
     orig_ProfileV_viewSetting(self, _cmd);
     
-    if (self && self.endDateTL) {
-        self.endDateTL.text = kExpireDateStr;
-    }
-    if (self && self.ddayTL) {
-        self.ddayTL.text = remainingDaysWithPrefix();
-    }
-    if (self && self.d_dayL) {
-        self.d_dayL.text = remainingDaysWithPrefix();
-    }
-    if (self && self.planTL) {
-        self.planTL.text = @"Premium";
-    }
-    if (self && self.planL) {
-        self.planL.text = @"Premium";
-    }
-    if (self && self.ddayL) {
-        self.ddayL.text = remainingDaysWithPrefix();
+    if ([self isKindOfClass:[UIView class]]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            modifyLabelOnView((UIView *)self);
+        });
     }
 }
 
-static void MyInfoV_setEndDateTL_hook(_TtC9Panda2Vpn7MyInfoV *self, SEL _cmd, UILabel *label) {
-    orig_MyInfoV_setEndDateTL(self, _cmd, label);
-    if (label) {
-        label.text = kExpireDateStr;
-    }
-}
-
-static void MyInfoV_setEndDateL_hook(_TtC9Panda2Vpn7MyInfoV *self, SEL _cmd, UILabel *label) {
-    orig_MyInfoV_setEndDateL(self, _cmd, label);
-    if (label) {
-        label.text = kExpireDateStr;
-    }
-}
-
-static void MyInfoV_setUseDeviceL_hook(_TtC9Panda2Vpn7MyInfoV *self, SEL _cmd, UILabel *label) {
-    orig_MyInfoV_setUseDeviceL(self, _cmd, label);
-    if (label) {
-        label.text = remainingDaysWithPrefix();
+static void MyInfoV_viewSetting_hook(_TtC9Panda2Vpn7MyInfoV *self, SEL _cmd) {
+    orig_MyInfoV_viewSetting(self, _cmd);
+    
+    if ([self isKindOfClass:[UIView class]]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            modifyLabelOnView((UIView *)self);
+        });
     }
 }
 
@@ -219,32 +167,7 @@ __attribute__((constructor)) static void Panda2VpnCrack_init() {
     Class ProfileV = objc_getClass("_TtC9Panda2Vpn8ProfileV");
     
     if (ProfileV) {
-        SEL setEndDateTL_sel = NSSelectorFromString(@"setEndDateTL:");
-        SEL setDdayTL_sel = NSSelectorFromString(@"setDdayTL:");
-        SEL setD_dayL_sel = NSSelectorFromString(@"setD_dayL:");
-        SEL setPlanTL_sel = NSSelectorFromString(@"setPlanTL:");
-        SEL setPlanL_sel = NSSelectorFromString(@"setPlanL:");
-        SEL setDdayL_sel = NSSelectorFromString(@"setDdayL:");
         SEL viewSetting_sel = NSSelectorFromString(@"viewSetting");
-        
-        if (class_getInstanceMethod(ProfileV, setEndDateTL_sel)) {
-            MSHookMessageEx(ProfileV, setEndDateTL_sel, (IMP)ProfileV_setEndDateTL_hook, (IMP*)&orig_ProfileV_setEndDateTL);
-        }
-        if (class_getInstanceMethod(ProfileV, setDdayTL_sel)) {
-            MSHookMessageEx(ProfileV, setDdayTL_sel, (IMP)ProfileV_setDdayTL_hook, (IMP*)&orig_ProfileV_setDdayTL);
-        }
-        if (class_getInstanceMethod(ProfileV, setD_dayL_sel)) {
-            MSHookMessageEx(ProfileV, setD_dayL_sel, (IMP)ProfileV_setD_dayL_hook, (IMP*)&orig_ProfileV_setD_dayL);
-        }
-        if (class_getInstanceMethod(ProfileV, setPlanTL_sel)) {
-            MSHookMessageEx(ProfileV, setPlanTL_sel, (IMP)ProfileV_setPlanTL_hook, (IMP*)&orig_ProfileV_setPlanTL);
-        }
-        if (class_getInstanceMethod(ProfileV, setPlanL_sel)) {
-            MSHookMessageEx(ProfileV, setPlanL_sel, (IMP)ProfileV_setPlanL_hook, (IMP*)&orig_ProfileV_setPlanL);
-        }
-        if (class_getInstanceMethod(ProfileV, setDdayL_sel)) {
-            MSHookMessageEx(ProfileV, setDdayL_sel, (IMP)ProfileV_setDdayL_hook, (IMP*)&orig_ProfileV_setDdayL);
-        }
         if (class_getInstanceMethod(ProfileV, viewSetting_sel)) {
             MSHookMessageEx(ProfileV, viewSetting_sel, (IMP)ProfileV_viewSetting_hook, (IMP*)&orig_ProfileV_viewSetting);
         }
@@ -253,18 +176,9 @@ __attribute__((constructor)) static void Panda2VpnCrack_init() {
     Class MyInfoV = objc_getClass("_TtC9Panda2Vpn7MyInfoV");
     
     if (MyInfoV) {
-        SEL setEndDateTL_sel = NSSelectorFromString(@"setEndDateTL:");
-        SEL setEndDateL_sel = NSSelectorFromString(@"setEndDateL:");
-        SEL setUseDeviceL_sel = NSSelectorFromString(@"setUseDeviceL:");
-        
-        if (class_getInstanceMethod(MyInfoV, setEndDateTL_sel)) {
-            MSHookMessageEx(MyInfoV, setEndDateTL_sel, (IMP)MyInfoV_setEndDateTL_hook, (IMP*)&orig_MyInfoV_setEndDateTL);
-        }
-        if (class_getInstanceMethod(MyInfoV, setEndDateL_sel)) {
-            MSHookMessageEx(MyInfoV, setEndDateL_sel, (IMP)MyInfoV_setEndDateL_hook, (IMP*)&orig_MyInfoV_setEndDateL);
-        }
-        if (class_getInstanceMethod(MyInfoV, setUseDeviceL_sel)) {
-            MSHookMessageEx(MyInfoV, setUseDeviceL_sel, (IMP)MyInfoV_setUseDeviceL_hook, (IMP*)&orig_MyInfoV_setUseDeviceL);
+        SEL viewSetting_sel = NSSelectorFromString(@"viewSetting");
+        if (class_getInstanceMethod(MyInfoV, viewSetting_sel)) {
+            MSHookMessageEx(MyInfoV, viewSetting_sel, (IMP)MyInfoV_viewSetting_hook, (IMP*)&orig_MyInfoV_viewSetting);
         }
     }
     
