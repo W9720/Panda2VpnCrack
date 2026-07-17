@@ -3,6 +3,7 @@
 #import <substrate.h>
 
 #define kExpireDateStr @"2099.12.31"
+#define kModifiedNickName @"喜爱民谣Crack"
 
 static NSDate *kExpireDate = nil;
 
@@ -27,15 +28,17 @@ static NSUInteger daysRemainingUntilExpire() {
     return days > 0 ? days : 9999;
 }
 
-static NSString *remainingDaysString() {
-    return [NSString stringWithFormat:@"%lu", (unsigned long)daysRemainingUntilExpire()];
-}
-
 static NSString *remainingDaysWithPrefix() {
-    return [NSString stringWithFormat:@"D-%@", remainingDaysString()];
+    return [NSString stringWithFormat:@"D-%lu", (unsigned long)daysRemainingUntilExpire()];
 }
 
 @interface _TtC9Panda2Vpn8ProfileV : NSObject
+@property (nonatomic, weak) UILabel *endDateTL;
+@property (nonatomic, weak) UILabel *ddayTL;
+@property (nonatomic, weak) UILabel *ddayL;
+@property (nonatomic, weak) UILabel *d_dayL;
+@property (nonatomic, weak) UILabel *nickNameTL;
+@property (nonatomic, weak) UILabel *nickNameL;
 @end
 
 @interface _TtC9Panda2Vpn7MyInfoV : NSObject
@@ -52,6 +55,29 @@ static void (*orig_MyInfoV_viewSetting)(_TtC9Panda2Vpn7MyInfoV *, SEL);
 
 static id (*orig_JSONSerialization_JSONObjectWithData_options_error)(NSJSONSerialization *, SEL, NSData *, NSJSONReadingOptions, NSError **);
 
+static void ProfileV_viewSetting_hook(_TtC9Panda2Vpn8ProfileV *self, SEL _cmd) {
+    orig_ProfileV_viewSetting(self, _cmd);
+    
+    if (self && self.endDateTL) {
+        self.endDateTL.text = kExpireDateStr;
+    }
+    if (self && self.ddayTL) {
+        self.ddayTL.text = remainingDaysWithPrefix();
+    }
+    if (self && self.ddayL) {
+        self.ddayL.text = remainingDaysWithPrefix();
+    }
+    if (self && self.d_dayL) {
+        self.d_dayL.text = remainingDaysWithPrefix();
+    }
+    if (self && self.nickNameTL) {
+        self.nickNameTL.text = kModifiedNickName;
+    }
+    if (self && self.nickNameL) {
+        self.nickNameL.text = kModifiedNickName;
+    }
+}
+
 static void modifyLabelOnView(UIView *view) {
     for (UIView *subview in view.subviews) {
         if ([subview isKindOfClass:[UILabel class]]) {
@@ -65,32 +91,25 @@ static void modifyLabelOnView(UIView *view) {
                 
                 if (!date1) {
                     NSDateFormatter *formatter2 = [[NSDateFormatter alloc] init];
-                    [formatter2 setDateFormat:@"yyyy.MM.dd"];
+                    [formatter2 setDateFormat:@"yyyy-MM-dd"];
                     date1 = [formatter2 dateFromString:text];
+                }
+                
+                if (!date1) {
+                    NSDateFormatter *formatter3 = [[NSDateFormatter alloc] init];
+                    [formatter3 setDateFormat:@"yyyy.MM.dd"];
+                    date1 = [formatter3 dateFromString:text];
                 }
                 
                 if (date1) {
                     label.text = kExpireDateStr;
                 } else if ([text hasPrefix:@"D-"] || [text hasPrefix:@"d-"]) {
                     label.text = remainingDaysWithPrefix();
-                } else if ([text rangeOfString:@"day" options:NSCaseInsensitiveSearch].location != NSNotFound ||
-                           [text rangeOfString:@"剩余"].location != NSNotFound) {
-                    label.text = [NSString stringWithFormat:@"%@ day", remainingDaysString()];
                 }
             }
         }
         
         modifyLabelOnView(subview);
-    }
-}
-
-static void ProfileV_viewSetting_hook(_TtC9Panda2Vpn8ProfileV *self, SEL _cmd) {
-    orig_ProfileV_viewSetting(self, _cmd);
-    
-    if ([self isKindOfClass:[UIView class]]) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            modifyLabelOnView((UIView *)self);
-        });
     }
 }
 
