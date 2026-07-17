@@ -23,9 +23,7 @@ jobs:
 
       - name: 确保control文件使用Unix换行符
         run: |
-          brew install dos2unix
-          dos2unix control
-          cat -A control
+          dos2unix control 2>/dev/null || sed -i '' 's/\r$//' control
 
       - name: 编译打包（正式版，无debug）
         run: |
