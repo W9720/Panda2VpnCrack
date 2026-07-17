@@ -156,8 +156,8 @@ static void (*orig_MyInfoV_setUseL)(_TtC9Panda2Vpn7MyInfoV *, SEL, UILabel *);
 static void (*orig_MyInfoV_setUseTL)(_TtC9Panda2Vpn7MyInfoV *, SEL, UILabel *);
 static void (*orig_ProfileV_viewSetting)(_TtC9Panda2Vpn8ProfileV *, SEL);
 
-static void (*orig_JSONSerialization_dataWithJSONObject_options_error)(NSJSONSerialization *, SEL, id, NSJSONWritingOptions, NSError **);
-static void (*orig_JSONSerialization_JSONObjectWithData_options_error)(NSJSONSerialization *, SEL, NSData *, NSJSONReadingOptions, NSError **);
+static id (*orig_JSONSerialization_dataWithJSONObject_options_error)(NSJSONSerialization *, SEL, id, NSJSONWritingOptions, NSError **);
+static id (*orig_JSONSerialization_JSONObjectWithData_options_error)(NSJSONSerialization *, SEL, NSData *, NSJSONReadingOptions, NSError **);
 static void (*orig_NSUserDefaults_setObject_forKey)(NSUserDefaults *, SEL, id, NSString *);
 static id (*orig_NSUserDefaults_objectForKey)(NSUserDefaults *, SEL, NSString *);
 
