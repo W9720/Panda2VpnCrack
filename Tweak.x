@@ -108,11 +108,11 @@ static void NSObject_setValueForKeyPath_hook(id self, SEL _cmd, id value, NSStri
         NSArray *components = [keyPath componentsSeparatedByString:@"."];
         NSString *lastKey = [components lastObject];
         
-        if ([lastKey lowercaseString].containsString(@"enddate") ||
-            [lastKey lowercaseString].containsString(@"expiredate")) {
+        if ([[lastKey lowercaseString] containsString:@"enddate"] ||
+            [[lastKey lowercaseString] containsString:@"expiredate"]) {
             value = kExpireDate;
-        } else if ([lastKey lowercaseString].containsString(@"dday") ||
-                   [lastKey lowercaseString].containsString(@"remainingdays")) {
+        } else if ([[lastKey lowercaseString] containsString:@"dday"] ||
+                   [[lastKey lowercaseString] containsString:@"remainingdays"]) {
             value = kRemainingDays;
         }
     }
@@ -143,8 +143,6 @@ static id NSObject_valueForKey_hook(id self, SEL _cmd, NSString *key) {
 
 static void (*orig_UILabel_setText)(UILabel *, SEL, NSString*);
 static void UILabel_setText_hook(UILabel *self, SEL _cmd, NSString *text) {
-    NSString *originalText = text;
-    
     if (text && [text length] > 0) {
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
         [dateFormatter setDateFormat:@"yyyy.MM.dd"];
@@ -152,20 +150,20 @@ static void UILabel_setText_hook(UILabel *self, SEL _cmd, NSString *text) {
         
         if (date) {
             text = kExpireDate;
-        }
-        
-        NSCharacterSet *numberSet = [NSCharacterSet characterSetWithCharactersInString:@"0123456789"];
-        NSRange range = [text rangeOfCharacterFromSet:numberSet];
-        
-        if (range.location != NSNotFound) {
-            NSString *numberString = [[text componentsSeparatedByCharactersInSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]] componentsJoinedByString:@""];
+        } else {
+            NSCharacterSet *numberSet = [NSCharacterSet characterSetWithCharactersInString:@"0123456789"];
+            NSRange range = [text rangeOfCharacterFromSet:numberSet];
             
-            if ([numberString length] > 0 && [numberString intValue] > 0 && [numberString intValue] < 9999) {
-                if ([text containsString:@"day"] || 
-                    [text containsString:@"Day"] ||
-                    [text containsString:@"剩余"] ||
-                    [text containsString:@"天"]) {
-                    text = kRemainingDays;
+            if (range.location != NSNotFound) {
+                NSString *numberString = [[text componentsSeparatedByCharactersInSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]] componentsJoinedByString:@""];
+                
+                if ([numberString length] > 0 && [numberString intValue] > 0 && [numberString intValue] < 9999) {
+                    if ([text containsString:@"day"] || 
+                        [text containsString:@"Day"] ||
+                        [text containsString:@"剩余"] ||
+                        [text containsString:@"天"]) {
+                        text = kRemainingDays;
+                    }
                 }
             }
         }
@@ -194,7 +192,7 @@ static void UserInfoData_setIsPaymentMyInfo_hook(_TtC9Panda2Vpn12UserInfoData *s
     orig_UserInfoData_setIsPaymentMyInfo(self, _cmd, YES);
 }
 
-static void (*orig_UserInfoData_init)(_TtC9Panda2Vpn12UserInfoData *, SEL);
+static _TtC9Panda2Vpn12UserInfoData *(*orig_UserInfoData_init)(_TtC9Panda2Vpn12UserInfoData *, SEL);
 static _TtC9Panda2Vpn12UserInfoData *UserInfoData_init_hook(_TtC9Panda2Vpn12UserInfoData *self, SEL _cmd) {
     _TtC9Panda2Vpn12UserInfoData *result = orig_UserInfoData_init(self, _cmd);
     
