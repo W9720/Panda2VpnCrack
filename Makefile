@@ -1,8 +1,8 @@
-export THEOS_DEVICE_IP = 127.0.0.1
-export THEOS_DEVICE_PORT = 2222
-export ARCHS = arm64
-export TARGET = iphone:clang:16.5:15.0
-export SDKVERSION = 16.5
+ THEOS_DEVICE_IP = 127.0.0.1
+ THEOS_DEVICE_PORT = 2222
+ARCHS = arm64 arm64e
+TARGET := iphone:clang:latest:14.0
+
 
 include $(THEOS)/makefiles/common.mk
 
