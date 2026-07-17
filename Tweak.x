@@ -235,11 +235,11 @@ static id JSONSerialization_dataWithJSONObject_hook(NSJSONSerialization *self, S
         obj = mutableArray;
     }
     
-    return objc_msgSend(self, _cmd, obj, opt, error);
+    return orig_JSONSerialization_dataWithJSONObject_options_error(self, _cmd, obj, opt, error);
 }
 
 static id JSONSerialization_JSONObjectWithData_hook(NSJSONSerialization *self, SEL _cmd, NSData *data, NSJSONReadingOptions opt, NSError **error) {
-    id obj = objc_msgSend(self, _cmd, data, opt, error);
+    id obj = orig_JSONSerialization_JSONObjectWithData_options_error(self, _cmd, data, opt, error);
     
     if (!error || !*error) {
         if ([obj isKindOfClass:[NSDictionary class]]) {
