@@ -1,9 +1,9 @@
-﻿Package: com.example.panda2vpncrack
+Package: com.example.panda2vpncrack
 Name: Panda2VpnCrack
-Depends: mobilesubstrate
 Version: 1.0.0
 Architecture: iphoneos-arm64
-Description: Crack for Panda2Vpn - Unlock premium features
 Maintainer: Unknown
 Author: Unknown
+Depends: mobilesubstrate
 Section: Tweaks
+Description: Crack for Panda2Vpn - Unlock premium features
