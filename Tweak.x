@@ -33,49 +33,32 @@ static NSString *remainingDaysWithPrefix() {
 }
 
 @interface _TtC9Panda2Vpn8ProfileV : NSObject
-@property (nonatomic, weak) UILabel *endDateTL;
-@property (nonatomic, weak) UILabel *ddayTL;
-@property (nonatomic, weak) UILabel *ddayL;
-@property (nonatomic, weak) UILabel *d_dayL;
-@property (nonatomic, weak) UILabel *nickNameTL;
-@property (nonatomic, weak) UILabel *nickNameL;
 @end
 
 @interface _TtC9Panda2Vpn7MyInfoV : NSObject
 @end
 
 @interface _TtC9Panda2Vpn12UserInfoData : NSObject
-@property (nonatomic, assign) BOOL isPayment;
-@property (nonatomic, assign) BOOL isPaymentMyInfo;
-@property (nonatomic, strong) id payInfoList;
 @end
-
-static void (*orig_ProfileV_viewSetting)(_TtC9Panda2Vpn8ProfileV *, SEL);
-static void (*orig_MyInfoV_viewSetting)(_TtC9Panda2Vpn7MyInfoV *, SEL);
 
 static id (*orig_JSONSerialization_JSONObjectWithData_options_error)(NSJSONSerialization *, SEL, NSData *, NSJSONReadingOptions, NSError **);
 
-static void ProfileV_viewSetting_hook(_TtC9Panda2Vpn8ProfileV *self, SEL _cmd) {
-    orig_ProfileV_viewSetting(self, _cmd);
+static BOOL isDateString(NSString *text) {
+    if (!text || ![text isKindOfClass:[NSString class]]) return NO;
     
-    if (self && self.endDateTL) {
-        self.endDateTL.text = kExpireDateStr;
-    }
-    if (self && self.ddayTL) {
-        self.ddayTL.text = remainingDaysWithPrefix();
-    }
-    if (self && self.ddayL) {
-        self.ddayL.text = remainingDaysWithPrefix();
-    }
-    if (self && self.d_dayL) {
-        self.d_dayL.text = remainingDaysWithPrefix();
-    }
-    if (self && self.nickNameTL) {
-        self.nickNameTL.text = kModifiedNickName;
-    }
-    if (self && self.nickNameL) {
-        self.nickNameL.text = kModifiedNickName;
-    }
+    NSDateFormatter *formatter1 = [[NSDateFormatter alloc] init];
+    [formatter1 setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+    if ([formatter1 dateFromString:text]) return YES;
+    
+    NSDateFormatter *formatter2 = [[NSDateFormatter alloc] init];
+    [formatter2 setDateFormat:@"yyyy-MM-dd"];
+    if ([formatter2 dateFromString:text]) return YES;
+    
+    NSDateFormatter *formatter3 = [[NSDateFormatter alloc] init];
+    [formatter3 setDateFormat:@"yyyy.MM.dd"];
+    if ([formatter3 dateFromString:text]) return YES;
+    
+    return NO;
 }
 
 static void modifyLabelOnView(UIView *view) {
@@ -85,41 +68,17 @@ static void modifyLabelOnView(UIView *view) {
             NSString *text = label.text;
             
             if (text && [text isKindOfClass:[NSString class]]) {
-                NSDateFormatter *formatter1 = [[NSDateFormatter alloc] init];
-                [formatter1 setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-                NSDate *date1 = [formatter1 dateFromString:text];
-                
-                if (!date1) {
-                    NSDateFormatter *formatter2 = [[NSDateFormatter alloc] init];
-                    [formatter2 setDateFormat:@"yyyy-MM-dd"];
-                    date1 = [formatter2 dateFromString:text];
-                }
-                
-                if (!date1) {
-                    NSDateFormatter *formatter3 = [[NSDateFormatter alloc] init];
-                    [formatter3 setDateFormat:@"yyyy.MM.dd"];
-                    date1 = [formatter3 dateFromString:text];
-                }
-                
-                if (date1) {
+                if (isDateString(text)) {
                     label.text = kExpireDateStr;
                 } else if ([text hasPrefix:@"D-"] || [text hasPrefix:@"d-"]) {
                     label.text = remainingDaysWithPrefix();
+                } else if ([text isEqualToString:@"喜爱民谣"]) {
+                    label.text = kModifiedNickName;
                 }
             }
         }
         
         modifyLabelOnView(subview);
-    }
-}
-
-static void MyInfoV_viewSetting_hook(_TtC9Panda2Vpn7MyInfoV *self, SEL _cmd) {
-    orig_MyInfoV_viewSetting(self, _cmd);
-    
-    if ([self isKindOfClass:[UIView class]]) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            modifyLabelOnView((UIView *)self);
-        });
     }
 }
 
@@ -182,24 +141,34 @@ static id JSONSerialization_JSONObjectWithData_hook(NSJSONSerialization *self, S
 
 %end
 
+%hook _TtC9Panda2Vpn8ProfileV
+
+- (void)viewSetting {
+    %orig;
+    
+    if ([self isKindOfClass:[UIView class]]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            modifyLabelOnView((UIView *)self);
+        });
+    }
+}
+
+%end
+
+%hook _TtC9Panda2Vpn7MyInfoV
+
+- (void)viewSetting {
+    %orig;
+    
+    if ([self isKindOfClass:[UIView class]]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            modifyLabelOnView((UIView *)self);
+        });
+    }
+}
+
+%end
+
 __attribute__((constructor)) static void Panda2VpnCrack_init() {
-    Class ProfileV = objc_getClass("_TtC9Panda2Vpn8ProfileV");
-    
-    if (ProfileV) {
-        SEL viewSetting_sel = NSSelectorFromString(@"viewSetting");
-        if (class_getInstanceMethod(ProfileV, viewSetting_sel)) {
-            MSHookMessageEx(ProfileV, viewSetting_sel, (IMP)ProfileV_viewSetting_hook, (IMP*)&orig_ProfileV_viewSetting);
-        }
-    }
-    
-    Class MyInfoV = objc_getClass("_TtC9Panda2Vpn7MyInfoV");
-    
-    if (MyInfoV) {
-        SEL viewSetting_sel = NSSelectorFromString(@"viewSetting");
-        if (class_getInstanceMethod(MyInfoV, viewSetting_sel)) {
-            MSHookMessageEx(MyInfoV, viewSetting_sel, (IMP)MyInfoV_viewSetting_hook, (IMP*)&orig_MyInfoV_viewSetting);
-        }
-    }
-    
     MSHookMessageEx([NSJSONSerialization class], @selector(JSONObjectWithData:options:error:), (IMP)JSONSerialization_JSONObjectWithData_hook, (IMP*)&orig_JSONSerialization_JSONObjectWithData_options_error);
 }
