@@ -21,6 +21,12 @@ jobs:
           brew install ldid
           chmod +x ~/theos/bin/*
 
+      - name: 确保control文件使用Unix换行符
+        run: |
+          brew install dos2unix
+          dos2unix control
+          cat -A control
+
       - name: 编译打包（正式版，无debug）
         run: |
           make clean
