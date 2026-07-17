@@ -6,7 +6,6 @@
 #define kPlanStatus @"Premium"
 
 static NSDate *kExpireDate = nil;
-static NSString *kAPIHost = @"staff20231205.com";
 
 static NSDate *parseExpireDate() {
     static dispatch_once_t onceToken;
@@ -33,16 +32,7 @@ static NSString *remainingDaysString() {
     return [NSString stringWithFormat:@"%lu", (unsigned long)daysRemainingUntilExpire()];
 }
 
-static NSString *timestampString() {
-    NSDate *expireDate = parseExpireDate();
-    if (!expireDate) return @"4102358400";
-    
-    return [NSString stringWithFormat:@"%.0f", [expireDate timeIntervalSince1970]];
-}
 
-static BOOL isTargetAPI(NSString *urlStr) {
-    return [urlStr rangeOfString:kAPIHost options:NSCaseInsensitiveSearch].location != NSNotFound;
-}
 
 static BOOL shouldModifyKey(NSString *key) {
     NSArray *paymentKeys = @[@"isPayment", @"isPaymentMyInfo", @"is_payment", @"is_payment_my_info", @"isVip", @"is_vip", @"member", @"member_status"];
